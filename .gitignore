@@ -1,0 +1,28 @@
+
+# Created by https://www.gitignore.io/api/java
+
+### Java ###
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+/target/
+Будет удалено .idea/artifacts/
+Будет удалено .idea/compiler.xml
+Будет удалено .idea/copyright/
+Будет удалено .idea/encodings.xml
+Будет удалено .idea/libraries/
+Будет удалено .idea/misc.xml
+Будет удалено .idea/modules.xml
+Будет удалено .idea/uiDesigner.xml
+Будет удалено .idea/vcs.xml
+Будет удалено .idea/workspace.xml
+Будет удалено src/main/java/ru/mail/park/main/model/
