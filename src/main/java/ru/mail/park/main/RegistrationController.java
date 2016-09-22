@@ -1,55 +1,75 @@
 package ru.mail.park.main;
 
+//импорты появятся автоматически, если вы выбираете класс из выпадающего списка или же после alt+enter
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.mail.park.model.UserProfile;
 import ru.mail.park.services.AccountService;
 
+//Метка по которой спринг находит контроллер
 @RestController
 public class RegistrationController {
 
+
     private final AccountService accountService;
+
+
+    /**
+     * Важное место. Мы не управляем жизненным циклом нашего класса. За нас это делает Spring. Аннотация говорит, что
+     * зависимости должны быть разрешены с помощью спрингового контекста{@see ApplicationContext}(реестра классов). В нем могут присутствовать,
+     * как наши сервисы(написанные нами), так и сервисы, предоставляемые спрингом.
+     * @param accountService - подставляет наш синглтон
+     */
     @Autowired
-    public RegistrationController(AccountService accountService){
-        this.accountService=accountService;
+    public RegistrationController(AccountService accountService) {
+        this.accountService = accountService;
     }
 
-    @RequestMapping(path = "/ali/user", method = RequestMethod.POST)
-    private ResponseEntity login(@RequestParam(name = "login") String login,
-                                 @RequestParam(name = "password") String password,
-                                 @RequestParam(name = "email") String email){
-        if (StringUtils.isEmpty(login)||StringUtils.isEmpty(password)||StringUtils.isEmpty(email)){
+    /**
+     * Я ориентировался на {@see http://docs.technopark.apiary.io/} . В методе что-то сделано сильно не так, как в документации.
+     * Что именно? Варианты ответа принимаются в slack {@see https://technopark-mail.slack.com/messages}
+     * @param login - реквест параметр
+     * @param password - =
+     * @param email- =
+     * @return - Возвращаем вместо id логин. Но это пока нормально.
+     */
+    @RequestMapping(path = "/api/user", method = RequestMethod.POST)
+    public ResponseEntity login(@RequestParam(name = "login") String login,
+                                @RequestParam(name = "password") String password,
+                                @RequestParam(name = "email") String email) {
+        //Инкапсулированная проверка на null и на пустоту. Выглядит гораздо более читаемо
+        if (StringUtils.isEmpty(login)
+                || StringUtils.isEmpty(password)
+                || StringUtils.isEmpty(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
-        UserProfile user = accountService.getUser(login);
-
-        if (user!=null){
-            return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
+        final UserProfile existingUser = accountService.getUser(login);
+        if (existingUser != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
 
+        accountService.addUser(login, password, email);
         return ResponseEntity.ok(new SuccessResponse(login));
     }
 
     @RequestMapping(path = "/api/session", method = RequestMethod.POST)
     public ResponseEntity auth(@RequestParam(name = "login") String login,
                                @RequestParam(name = "password") String password) {
-        if (StringUtils.isEmpty(login)||StringUtils.isEmpty(password)){
+        if(StringUtils.isEmpty(login)
+                || StringUtils.isEmpty(password) ) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
         final UserProfile user = accountService.getUser(login);
-        if (user.getPassword().equals(password)){
-            return ResponseEntity.ok(new SuccessResponse(login));
+        if(user.getPassword().equals(password)) {
+            return ResponseEntity.ok(new SuccessResponse(user.getLogin()));
         }
-
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
     }
 
+    // объект класса будет автоматически преобразован в JSON при записи тела ответа
     private static final class SuccessResponse {
         private String login;
 
@@ -61,22 +81,6 @@ public class RegistrationController {
         @SuppressWarnings("unused")
         public String getLogin() {
             return login;
-        }
-    }
-
-    private static final class BadResponse {
-        private String lastLogin;
-
-        private BadResponse(String login) {
-            this.lastLogin = login;
-        }
-
-        //Справа, на полосе прокрутки, можно увидеть желтые метки.
-        //Это потенциальные ошибки и места, которые можно улучшить или инспекции
-        //Если вы уверены в том как написан ваш код (только в этом случае), то можете убрать их. Это назвыется подавление инспекций
-        @SuppressWarnings("unused")
-        public String getLastLogin() {
-            return lastLogin;
         }
     }
 
