@@ -1,6 +1,8 @@
 package ru.mail.park.main;
 
 //импорты появятся автоматически, если вы выбираете класс из выпадающего списка или же после alt+enter
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,80 +10,162 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.mail.park.model.UserProfile;
 import ru.mail.park.services.AccountService;
+import ru.mail.park.services.SessionService;
+
+import javax.servlet.http.HttpSession;
+import java.util.Objects;
 
 //Метка по которой спринг находит контроллер
 @RestController
 public class RegistrationController {
-
-
     private final AccountService accountService;
+    private final SessionService sessionService;
 
-
-    /**
-     * Важное место. Мы не управляем жизненным циклом нашего класса. За нас это делает Spring. Аннотация говорит, что
-     * зависимости должны быть разрешены с помощью спрингового контекста{@see ApplicationContext}(реестра классов). В нем могут присутствовать,
-     * как наши сервисы(написанные нами), так и сервисы, предоставляемые спрингом.
-     * @param accountService - подставляет наш синглтон
-     */
     @Autowired
-    public RegistrationController(AccountService accountService) {
+    public RegistrationController(AccountService accountService, SessionService sessionService) {
         this.accountService = accountService;
+        this.sessionService = sessionService;
     }
 
-    /**
-     * Я ориентировался на {@see http://docs.technopark.apiary.io/} . В методе что-то сделано сильно не так, как в документации.
-     * Что именно? Варианты ответа принимаются в slack {@see https://technopark-mail.slack.com/messages}
-     * @param login - реквест параметр
-     * @param password - =
-     * @param email- =
-     * @return - Возвращаем вместо id логин. Но это пока нормально.
-     */
-    @RequestMapping(path = "/api/user", method = RequestMethod.POST)
-    public ResponseEntity login(@RequestParam(name = "login") String login,
-                                @RequestParam(name = "password") String password,
-                                @RequestParam(name = "email") String email) {
-        //Инкапсулированная проверка на null и на пустоту. Выглядит гораздо более читаемо
-        if (StringUtils.isEmpty(login)
-                || StringUtils.isEmpty(password)
-                || StringUtils.isEmpty(email)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
+    @RequestMapping(path = "/user", method = RequestMethod.POST)
+    public ResponseEntity login(@RequestBody RegistrationRequest body, HttpSession httpSession) {
+        final String sessionId = httpSession.getId();
+        final String login = body.getLogin();
+        final String password = body.getPassword();
+        final String email = body.getEmail();
+        boolean bodyNull = false;
+
+        bodyNull = (StringUtils.isEmpty(login));
+        bodyNull |= (StringUtils.isEmpty(email));
+        bodyNull |= (StringUtils.isEmpty(password));
+
+        if (bodyNull) {
+            String messegeError = "Field filled not:";
+            boolean flag = false;
+            if (StringUtils.isEmpty(login)) {
+                messegeError += "login";
+                flag = true;
+            }
+            if ((StringUtils.isEmpty(email))) {
+                if (flag) messegeError +=", ";
+                messegeError += "email";
+                flag = true;
+            }
+            if (StringUtils.isEmpty(password)) {
+                if (flag) messegeError +=", ";
+                messegeError += "password";
+            }
+            messegeError +='!';
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messegeError);
         }
         final UserProfile existingUser = accountService.getUser(login);
         if (existingUser != null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Такой пользователь уже существует");
         }
-
+        final String existingLogin = sessionService.getLogin(sessionId);
+        if(existingLogin!=null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Вы уже авторизированы");
+        }
         accountService.addUser(login, password, email);
-        return ResponseEntity.ok(new SuccessResponse(login));
+        return ResponseEntity.ok(new SuccessResponse("User created successfully"));
     }
 
-    @RequestMapping(path = "/api/session", method = RequestMethod.POST)
-    public ResponseEntity auth(@RequestParam(name = "login") String login,
-                               @RequestParam(name = "password") String password) {
-        if(StringUtils.isEmpty(login)
-                || StringUtils.isEmpty(password) ) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
+    @RequestMapping(path = "/hello",method = RequestMethod.GET)
+    public ResponseEntity hello(HttpSession httpSession) {
+        final String sessionId = httpSession.getId();
+        final String login = sessionService.getLogin(sessionId);
+
+        if (login!=null){
+            return ResponseEntity.ok(new SuccessResponse("You are logged"));
+        }
+        return ResponseEntity.ok(new SuccessResponse("you are not authorized"));
+    }
+
+    @RequestMapping(path = "/exit", method = RequestMethod.GET)
+    public ResponseEntity exit(HttpSession httpSession){
+        final String sessionId = httpSession.getId();
+        final String login = sessionService.removeLogin(sessionId);
+        if (login != null){
+            return ResponseEntity.ok(new SuccessResponse("You are no longer authorized"));
+        }
+        return ResponseEntity.ok(new SuccessResponse("You are not logged in"));
+    }
+
+    @RequestMapping(path = "/session", method = RequestMethod.POST)
+    public ResponseEntity auth(@RequestBody AuthorisationRequest body, HttpSession httpSession){
+        final String sessionId = httpSession.getId();
+
+        final String login = body.getLogin();
+        final String password = body.getPassword();
+
+        if (StringUtils.isEmpty(login)||StringUtils.isEmpty(password)){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request");
         }
         final UserProfile user = accountService.getUser(login);
-        if(user.getPassword().equals(password)) {
-            return ResponseEntity.ok(new SuccessResponse(user.getLogin()));
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User does not exist");
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
+        if (user.getPassword().equals(password)) {
+            final String existingLogin = sessionService.getLogin(sessionId);
+            if(Objects.equals(existingLogin, login)) { sessionService.removeLogin(sessionId); }
+            sessionService.addSession(sessionId, login);
+            return ResponseEntity.ok(new SuccessResponse("You have successfully signed"));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Something went wrong");
     }
 
-    // объект класса будет автоматически преобразован в JSON при записи тела ответа
-    private static final class SuccessResponse {
+    private static final class RegistrationRequest {
         private String login;
+        private String password;
+        private String email;
 
-        private SuccessResponse(String login) {
+        private RegistrationRequest(String login, String password, String email) {
             this.login = login;
+            this.password = password;
+            this.email = email;
         }
 
-        //Функция необходима для преобразования см  https://en.wikipedia.org/wiki/Plain_Old_Java_Object
-        @SuppressWarnings("unused")
         public String getLogin() {
             return login;
         }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public String getEmail() {
+            return email;
+        }
     }
 
+    private static final class AuthorisationRequest{
+        private String login;
+        private String password;
+
+        private AuthorisationRequest(String login, String password) {
+            this.login = login;
+            this.password = password;
+        }
+
+        public String getLogin() {
+            return login;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+    }
+
+    private static final class SuccessResponse{
+        private String response;
+
+        private SuccessResponse(String responce){
+            this.response = responce;
+        }
+
+        @SuppressWarnings("unused")
+        public String getResponce(){
+            return response;
+        }
+    }
 }
