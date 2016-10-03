@@ -1,8 +1,6 @@
 package ru.mail.park.main;
 
-//импорты появятся автоматически, если вы выбираете класс из выпадающего списка или же после alt+enter
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +13,6 @@ import ru.mail.park.services.SessionService;
 import javax.servlet.http.HttpSession;
 import java.util.Objects;
 
-//Метка по которой спринг находит контроллер
 @RestController
 public class RegistrationController {
     private final AccountService accountService;
@@ -33,9 +30,8 @@ public class RegistrationController {
         final String login = body.getLogin();
         final String password = body.getPassword();
         final String email = body.getEmail();
-        boolean bodyNull = false;
+        boolean bodyNull = (StringUtils.isEmpty(login));
 
-        bodyNull = (StringUtils.isEmpty(login));
         bodyNull |= (StringUtils.isEmpty(email));
         bodyNull |= (StringUtils.isEmpty(password));
 
@@ -70,7 +66,7 @@ public class RegistrationController {
         return ResponseEntity.ok(new SuccessResponse("User created successfully"));
     }
 
-    @RequestMapping(path = "/hello",method = RequestMethod.GET)
+    @RequestMapping(path = "/session",method = RequestMethod.GET)
     public ResponseEntity hello(HttpSession httpSession) {
         final String sessionId = httpSession.getId();
         final String login = sessionService.getLogin(sessionId);
@@ -81,7 +77,7 @@ public class RegistrationController {
         return ResponseEntity.ok(new SuccessResponse("you are not authorized"));
     }
 
-    @RequestMapping(path = "/exit", method = RequestMethod.GET)
+    @RequestMapping(path = "/session", method = RequestMethod.DELETE)
     public ResponseEntity exit(HttpSession httpSession){
         final String sessionId = httpSession.getId();
         final String login = sessionService.removeLogin(sessionId);
