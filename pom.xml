@@ -7,7 +7,7 @@
 
     <groupId>ru.mail.park</groupId>
     <artifactId>StackDowble</artifactId>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <version>2.0</version>
     <name>StackDowble</name>
 
