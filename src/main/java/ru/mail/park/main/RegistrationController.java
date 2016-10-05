@@ -39,11 +39,11 @@ public class RegistrationController {
         if (StringUtils.isEmpty(login)
                 || StringUtils.isEmpty(password)
                 || StringUtils.isEmpty(email)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{Одно из полей пусто}");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
         final UserProfile existingUser = accountService.getUser(login);
         if (existingUser != null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{Такой пользователь существует}");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
 
         accountService.addUser(login, password, email);
@@ -54,7 +54,7 @@ public class RegistrationController {
         if (sessionService.checkExists(sessionId.getId())) {
             return ResponseEntity.ok(new SuccessResponse(sessionService.returnLogin(sessionId.getId())));
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{Вы не авторизованы!}");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
     }
 
@@ -62,9 +62,9 @@ public class RegistrationController {
     public ResponseEntity deleteSession(HttpSession sessionId) {
         if(sessionService.checkExists(sessionId.getId())) {
             sessionService.deleteSession(sessionId.getId());
-            return ResponseEntity.ok().body("{Вы больше не авторизованы!}");
+            return ResponseEntity.ok().body("{}");
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{Вы не были авторизованы!}");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
     }
 
     @RequestMapping(path = "/api/session", method = RequestMethod.POST)
@@ -73,14 +73,14 @@ public class RegistrationController {
         final String password = body.getPassword();
         if(StringUtils.isEmpty(login)
                 || StringUtils.isEmpty(password) ) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{Неправильный запрос}");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
         final UserProfile user = accountService.getUser(login);
         if(user.getPassword().equals(password)) {
             sessionService.addSession(sessionId.getId(),user.getLogin());
             return ResponseEntity.ok(new SuccessResponse(user.getLogin()));
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{Возникла ошибка}");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
     }
 
     @RequestMapping(path = "/api/user/{id}", method = RequestMethod.GET)
@@ -88,7 +88,7 @@ public class RegistrationController {
         if (sessionService.checkExists(sessionId.getId())) {
             return ResponseEntity.ok().body(accountService.getUser(sessionService.returnLogin(sessionId.getId())));
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{Вы не авторизованы!}");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
     }
 
@@ -98,15 +98,17 @@ public class RegistrationController {
         final String login = body.getLogin();
         final String email = body.getEmail();
         final String password = body.getPassword();
+        final String oldlogin = sessionService.returnLogin(sessionId.getId());
         if (sessionService.checkExists(sessionId.getId())) {
             UserProfile temp = accountService.getUser(sessionService.returnLogin(sessionId.getId()));
                     if (temp.getId() == id) {
-                        accountService.changeUser(sessionService.returnLogin(sessionId.getId()), login, password, email);
+                        accountService.changeUser(oldlogin, login, password, email);
+                        sessionService.changeSessionLogin(sessionId.getId(),oldlogin,login);
                         return ResponseEntity.ok().body(body);
                     } else {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{}"); }
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{Вы не авторизованы!}");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
     }
 
@@ -115,12 +117,13 @@ public class RegistrationController {
         if (sessionService.checkExists(sessionId.getId())) {
             UserProfile temp = accountService.getUser(sessionService.returnLogin(sessionId.getId()));
             if (temp.getId() == id) {
+                sessionService.deleteSession(sessionId.getId());
                 accountService.removeUser(temp.getLogin());
                 return ResponseEntity.ok().body("{}");
             } else {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{}"); }
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{Вы не авторизованы!}");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
     }
 
