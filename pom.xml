@@ -50,15 +50,9 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>$Application</mainClass>
-                    <layout>ZIP</layout>
+    
                 </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
+
             </plugin>
         </plugins>
     </build>
