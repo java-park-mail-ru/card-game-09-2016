@@ -50,7 +50,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>$Application</mainClass>
-    
+
                 </configuration>
 
             </plugin>
