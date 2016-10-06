@@ -21,6 +21,8 @@ public class AccountService {
         return userNameToUser.get(login);
     }
 
+
+
     public void removeUser(String login) {
         if(userNameToUser.containsKey(login)) {
             userNameToUser.remove(login);
@@ -35,5 +37,6 @@ public class AccountService {
             temp.setPassword(password);
         }
     }
+
 
 }
