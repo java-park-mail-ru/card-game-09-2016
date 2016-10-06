@@ -25,6 +25,7 @@ public class SessionService {
         return sessionToLogin.containsKey(sessionId);
     }
 
+
     public void changeSessionLogin(String sessionID, String oldlogin, String login){
         sessionToLogin.replace(sessionID,oldlogin,login);
     }

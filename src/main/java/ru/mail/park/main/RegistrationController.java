@@ -83,10 +83,14 @@ public class RegistrationController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
     }
 
-    @RequestMapping(path = "/api/user/{id}", method = RequestMethod.GET)
-    public ResponseEntity getInfo(@PathVariable("id") int id, HttpSession sessionId) {
+    @RequestMapping(path = "/api/user", method = RequestMethod.GET)
+    public ResponseEntity getInfo(@RequestParam String login, HttpSession sessionId) {
+        final UserProfile user = accountService.getUser(login);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
+        }
         if (sessionService.checkExists(sessionId.getId())) {
-            return ResponseEntity.ok().body(accountService.getUser(sessionService.returnLogin(sessionId.getId())));
+            return ResponseEntity.ok().body(user.getLogin());
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
@@ -99,32 +103,32 @@ public class RegistrationController {
         final String email = body.getEmail();
         final String password = body.getPassword();
         final String oldlogin = sessionService.returnLogin(sessionId.getId());
-        if (sessionService.checkExists(sessionId.getId())) {
-            UserProfile temp = accountService.getUser(sessionService.returnLogin(sessionId.getId()));
-                    if (temp.getId() == id) {
-                        accountService.changeUser(oldlogin, login, password, email);
-                        sessionService.changeSessionLogin(sessionId.getId(),oldlogin,login);
-                        return ResponseEntity.ok().body(body);
-                    } else {
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{}"); }
-        } else {
+        if(!sessionService.checkExists(sessionId.getId())){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
+        }
+        UserProfile temp = accountService.getUser(sessionService.returnLogin(sessionId.getId()));
+        if (temp.getId() == id) {
+            accountService.changeUser(oldlogin, login, password, email);
+            sessionService.changeSessionLogin(sessionId.getId(),oldlogin,login);
+            return ResponseEntity.ok().body(body);
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{}");
         }
     }
 
     @RequestMapping(path = "/api/user/{id}", method = RequestMethod.DELETE)
     public ResponseEntity deleteUser(@PathVariable("id") int id, HttpSession sessionId) {
-        if (sessionService.checkExists(sessionId.getId())) {
-            UserProfile temp = accountService.getUser(sessionService.returnLogin(sessionId.getId()));
-            if (temp.getId() == id) {
-                sessionService.deleteSession(sessionId.getId());
-                accountService.removeUser(temp.getLogin());
-                return ResponseEntity.ok().body("{}");
-            } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{}"); }
-        } else {
+        if (!sessionService.checkExists(sessionId.getId())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
+        UserProfile temp = accountService.getUser(sessionService.returnLogin(sessionId.getId()));
+        if (temp.getId() == id) {
+            sessionService.deleteSession(sessionId.getId());
+            accountService.removeUser(temp.getLogin());
+            return ResponseEntity.ok().body("{}");
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{}"); }
+
     }
 
 
