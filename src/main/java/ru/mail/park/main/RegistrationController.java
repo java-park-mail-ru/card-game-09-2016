@@ -107,6 +107,9 @@ public class RegistrationController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
         UserProfile temp = accountService.getUser(sessionService.returnLogin(sessionId.getId()));
+        if (temp==null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
+        }
         if (temp.getId() == id) {
             accountService.changeUser(oldlogin, login, password, email);
             sessionService.changeSessionLogin(sessionId.getId(),oldlogin,login);
@@ -122,6 +125,9 @@ public class RegistrationController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
         UserProfile temp = accountService.getUser(sessionService.returnLogin(sessionId.getId()));
+        if (temp==null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
+        }
         if (temp.getId() == id) {
             sessionService.deleteSession(sessionId.getId());
             accountService.removeUser(temp.getLogin());
