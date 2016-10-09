@@ -12,6 +12,8 @@
 .idea/jsLibraryMappings.xml
 .idea/libraries/*
 
+StackDowble.iml
+
 # Sensitive or high-churn files:
 .idea/dataSources.ids
 .idea/dataSources.xml
@@ -33,3 +35,4 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+.idea/libraries/
