@@ -1,3 +1,7 @@
+services:
+  - mysql
+before_script:
+  - mysql -u root -e "create database StackDoubleDB;"
 language: java
 jdk:
   - oraclejdk8
