@@ -2,6 +2,8 @@ services:
   - mysql
 before_script:
   - mysql -u root -e "create database StackDouble_db;"
+  - mysql -u root -e "create user 'TestDB'@'localhost' identified by 'TestDB';"
+  - mysql -u root -e "grant all privileges on TestDB. * to 'TestDB'@'localhost';"
 language: java
 jdk:
   - oraclejdk8
