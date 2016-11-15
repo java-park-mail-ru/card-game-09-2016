@@ -2,6 +2,7 @@ package ru.mail.park.services;
 
 
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -10,12 +11,10 @@ import org.springframework.stereotype.Service;
 import ru.mail.park.model.UserProfile;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 @Service
 public class AccountService {
-    private ConcurrentHashMap<String, UserProfile> userNameToUser = new ConcurrentHashMap<>();
     private final JdbcTemplate template;
     
     public AccountService(JdbcTemplate template) {
@@ -48,18 +47,23 @@ public class AccountService {
         return template.queryForObject(sql, userProfileRowMapper, login);
     }
 
-    public void removeUser(String login) {
-        if(userNameToUser.containsKey(login)) {
-            userNameToUser.remove(login);
+    public int removeUser(String login) {
+        try {
+            String sql = "DELETE  FROM `Users` WHERE `login` = ?;";
+            return template.update(sql, login);
+        } catch (EmptyResultDataAccessException na){
+            return 0;
         }
     }
 
-    public void changeUser(String oldLogin, String newLogin, String password, String email) {
-        if (userNameToUser.containsKey(oldLogin)) {
-            UserProfile temp = getUser(oldLogin);
-            temp.setEmail(email);
-            temp.setLogin(newLogin);
-            temp.setPassword(password);
+    public int changeUser(String oldLogin, String newLogin, String password, String email) {
+        try {
+            String sql = "UPDATE `Users` SET `login` = ?, `email` = ?, `password` = ?  WHERE `login` = ?;";
+            return template.update(sql,newLogin,email, password, oldLogin);
+        } catch (EmptyResultDataAccessException na){
+            return 0;
+        }catch (DuplicateKeyException dk) {
+            return -1;
         }
     }
 
