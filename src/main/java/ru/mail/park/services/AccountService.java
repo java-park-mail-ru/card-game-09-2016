@@ -1,9 +1,15 @@
 package ru.mail.park.services;
 
 
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import ru.mail.park.model.UserProfile;
-
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -21,14 +27,14 @@ public class AccountService {
         try {
 			KeyHolder keyHolder = new GeneratedKeyHolder();
 			template.update(cnctn -> {
-                        PreparedStatement ps = cnctn.prepareStatement(
+                        PreparedStatement pst = cnctn.prepareStatement(
                                 "INSERT INTO `Users` (`email`,`login`,`password`) VALUES (?,?,?)",
 								Statement.RETURN_GENERATED_KEYS);
                         int index = 0;
-                        pst.setInt(++index, email);
-                        pst.setInt(++index, login);
+                        pst.setString(++index, email);
+                        pst.setString(++index, login);
                         pst.setString(++index, password);
-                        return ps;
+                        return pst;
                     }
 					, keyHolder);
 			return new UserProfile(keyHolder.getKey().intValue(),login, email, password);
@@ -39,7 +45,7 @@ public class AccountService {
 
     public UserProfile getUser(String login) {
         String sql = "SELECT * FROM `Users` WHERE `login` = ?;";
-        return template.queryForObject(sql, USER_DETAIL_ALL_ROW_MAPPER, login);
+        return template.queryForObject(sql, userProfileRowMapper, login);
     }
 
     public void removeUser(String login) {
@@ -57,10 +63,9 @@ public class AccountService {
         }
     }
 
-    private final RowMapper<UserDetailAll> USER_DETAIL_ALL_ROW_MAPPER = (rs, rowNum) -> {
-		return new UserDetailAll(rs.getInt("id"),
-				rs.getString("login"),
-				rs.getString("email"),
-				rs.getString("password"));
-	};
+    private final RowMapper<UserProfile> userProfileRowMapper = (rs, rowNum) ->
+            new UserProfile(rs.getInt("id"),
+                rs.getString("login"),
+                rs.getString("email"),
+                rs.getString("password"));
 }

@@ -1,7 +1,5 @@
 package ru.mail.park.model;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 public class UserProfile {
     private String login;
     private String email;
@@ -12,7 +10,7 @@ public class UserProfile {
         this.login = login;
         this.email = email;
         this.password = password;
-        this.id = id
+        this.id = id;
     }
     
     public String getEmail() {
@@ -31,7 +29,7 @@ public class UserProfile {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
