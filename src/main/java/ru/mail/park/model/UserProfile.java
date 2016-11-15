@@ -6,14 +6,17 @@ public class UserProfile {
     private String login;
     private String email;
     private String password;
-    private static final AtomicLong ID_GENERATOR = new AtomicLong(0);
-    private long id;
+    private Integer id;
 
-    public UserProfile(String login, String email, String password) {
+    public UserProfile(Integer id, String login, String email, String password) {
         this.login = login;
         this.email = email;
         this.password = password;
-        this.id = ID_GENERATOR.getAndIncrement();
+        this.id = id
+    }
+    
+    public String getEmail() {
+        return email;
     }
 
     public String getLogin() {
@@ -24,7 +27,7 @@ public class UserProfile {
         return password;
     }
 
-    public long getId() {
+    public Integer getId() {
         return id;
     }
 
