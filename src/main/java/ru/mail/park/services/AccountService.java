@@ -43,10 +43,22 @@ public class AccountService {
     }
 
     public UserProfile getUser(Integer id) {
-        String sql = "SELECT `id`,`login`, `score` FROM `Users` WHERE `login` = ?;";
-        return template.queryForObject(sql, userProfileRowMapper, id);
+        try {
+            String sql = "SELECT `id`,`login`, `score` FROM `Users` WHERE `login` = ?;";
+            return template.queryForObject(sql, userProfileRowMapper, id);
+        } catch (EmptyResultDataAccessException na) {
+            return null;
+        }
     }
 
+    public Integer getId(String login, String password) {
+        try {
+            String sql = "SELECT `id` FROM `Users` WHERE `login` = ? AND `password` = ?;";
+            return template.update(sql, login, password);
+        } catch (EmptyResultDataAccessException na) {
+            return 0;
+        }
+    }
     public int removeUser(String login) {
         try {
             String sql = "DELETE  FROM `Users` WHERE `login` = ?;";

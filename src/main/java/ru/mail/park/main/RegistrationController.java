@@ -41,18 +41,16 @@ public class RegistrationController {
                 || StringUtils.isEmpty(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
-        final UserProfile existingUser = accountService.getUser(login);
-        if (existingUser != null) {
+        if (accountService.addUser(login, password, email) != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
 
-        accountService.addUser(login, password, email);
         return ResponseEntity.ok(new SuccessResponse(login));
     }
     @RequestMapping(path = "/api/session", method = RequestMethod.GET)
     public ResponseEntity checkAuth(HttpSession sessionId) {
         if (sessionService.checkExists(sessionId.getId())) {
-            return ResponseEntity.ok(new SuccessResponse(sessionService.returnLogin(sessionId.getId())));
+            return ResponseEntity.ok(new SuccessResponse(sessionService.returnUserId(sessionId.getId()).toString()));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
@@ -75,17 +73,19 @@ public class RegistrationController {
                 || StringUtils.isEmpty(password) ) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
-        final UserProfile user = accountService.getUser(login);
-        if(user.getPassword().equals(password)) {
-            sessionService.addSession(sessionId.getId(),user.getLogin());
+
+        final int userId = accountService.getId(login,password);
+        if(userId!=0) {
+            final UserProfile user = accountService.getUser(userId);
+            sessionService.addSession(sessionId.getId(),user.getId());
             return ResponseEntity.ok(new SuccessResponse(user.getLogin()));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
     }
 
     @RequestMapping(path = "/api/user", method = RequestMethod.GET)
-    public ResponseEntity getInfo(@RequestParam String login, HttpSession sessionId) {
-        final UserProfile user = accountService.getUser(login);
+    public ResponseEntity getInfo(@RequestParam Integer userId, HttpSession sessionId) {
+        final UserProfile user = accountService.getUser(userId);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
@@ -102,17 +102,20 @@ public class RegistrationController {
         final String login = body.getLogin();
         final String email = body.getEmail();
         final String password = body.getPassword();
-        final String oldlogin = sessionService.returnLogin(sessionId.getId());
+
+        //final String oldlogin = sessionService.returnUserId(sessionId.getId());
+        final  String oldlogin;
         if(!sessionService.checkExists(sessionId.getId())){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
-        UserProfile temp = accountService.getUser(sessionService.returnLogin(sessionId.getId()));
+        UserProfile temp = accountService.getUser((Integer) sessionService.returnUserId(sessionId.getId()));
         if (temp==null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
         if (temp.getId() == id) {
+            oldlogin = temp.getLogin();
             accountService.changeUser(oldlogin, login, password, email);
-            sessionService.changeSessionLogin(sessionId.getId(),oldlogin,login);
+            //sessionService.changeSessionLogin(sessionId.getId(),oldlogin,login); -? что это
             return ResponseEntity.ok().body(body);
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("{}");
@@ -124,7 +127,7 @@ public class RegistrationController {
         if (!sessionService.checkExists(sessionId.getId())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
-        UserProfile temp = accountService.getUser(sessionService.returnLogin(sessionId.getId()));
+        UserProfile temp = accountService.getUser(sessionService.returnUserId(sessionId.getId()));
         if (temp==null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }

@@ -7,17 +7,17 @@ import java.util.Map;
 
 @Service
 public class SessionService {
-    private Map<String, String> sessionToLogin = new HashMap<>();
+    private Map<String, Integer> sessionToLogin = new HashMap<>();
 
-    public void addSession(String sessionId, String login) {
-        sessionToLogin.put(sessionId, login);
+    public void addSession(String sessionId, Integer userId) {
+        sessionToLogin.put(sessionId, userId);
     }
 
     public void deleteSession(String sessionId) {
         if (checkExists(sessionId)) sessionToLogin.remove(sessionId);
     }
 
-    public String returnLogin(String sessionId) {
+    public Integer returnUserId(String sessionId) {
         return sessionToLogin.get(sessionId);
     }
 
@@ -26,8 +26,8 @@ public class SessionService {
     }
 
 
-    public void changeSessionLogin(String sessionID, String oldlogin, String login){
-        sessionToLogin.replace(sessionID,oldlogin,login);
+    public void changeSessionLogin(String sessionID, Integer oldUserId, Integer userId){
+        sessionToLogin.replace(sessionID,oldUserId,userId); //-? не понял этого метода
     }
 
 }
