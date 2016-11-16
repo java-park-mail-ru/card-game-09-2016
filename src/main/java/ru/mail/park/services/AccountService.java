@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import ru.mail.park.model.UserProfile;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.Objects;
 
 
 @Service
@@ -53,8 +54,12 @@ public class AccountService {
 
     public Integer getId(String login, String password) {
         try {
-            String sql = "SELECT `id` FROM `Users` WHERE `login` = ? AND `password` = ?;";
-            return template.update(sql, login, password);
+            String sql = "SELECT `id`, `password` FROM `Users` WHERE `login` = ? ;";
+            Security security = template.queryForObject(sql, securityRowMapper,login);
+            if (!Objects.equals(password, security.getPassword())){
+                return -1;
+            }
+            return security.getId();
         } catch (EmptyResultDataAccessException na) {
             return 0;
         }
@@ -81,4 +86,25 @@ public class AccountService {
 
     private final RowMapper<UserProfile> userProfileRowMapper = (rs, rowNum) ->
             new UserProfile(rs.getInt("id") ,rs.getString("login"),rs.getInt("score"));
+
+    private final RowMapper<Security> securityRowMapper = (rs,rowNum)->
+            new Security(rs.getInt("id"),rs.getString("password"));
+
+    private static final class Security{
+        private final int id;
+        private final String password;
+
+        private Security(int id, String password) {
+            this.id = id;
+            this.password = password;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+    }
 }
