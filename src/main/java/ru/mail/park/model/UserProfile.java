@@ -1,49 +1,26 @@
 package ru.mail.park.model;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 public class UserProfile {
-    private String login;
-    private String email;
-    private String password;
-    private static final AtomicLong ID_GENERATOR = new AtomicLong(0);
-    private long id;
+    private final String login;
+    private final Integer score;
+    private final Integer id;
 
-    public UserProfile(String login, String email, String password) {
+    public UserProfile(Integer id, String login, Integer score) {
         this.login = login;
-        this.email = email;
-        this.password = password;
-        this.id = ID_GENERATOR.getAndIncrement();
+        this.id = id;
+        this.score = score;
     }
 
     public String getLogin() {
         return login;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public Integer getScore() {
+        return score;
     }
-
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
 }
 
