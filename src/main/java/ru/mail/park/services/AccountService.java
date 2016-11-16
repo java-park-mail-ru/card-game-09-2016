@@ -1,12 +1,15 @@
 package ru.mail.park.services;
 
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.mail.park.model.UserProfile;
 import java.sql.PreparedStatement;
@@ -17,6 +20,10 @@ import java.util.Objects;
 @Service
 public class AccountService {
     private final JdbcTemplate template;
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
     
     public AccountService(JdbcTemplate template) {
         this.template = template;
@@ -33,7 +40,7 @@ public class AccountService {
                         int index = 0;
                         pst.setString(++index, email);
                         pst.setString(++index, login);
-                        pst.setString(++index, password);
+                        pst.setString(++index, passwordEncoder().encode(password));
                         return pst;
                     }
 					, keyHolder);
@@ -56,7 +63,7 @@ public class AccountService {
         try {
             String sql = "SELECT `id`, `password` FROM `Users` WHERE `login` = ? ;";
             Security security = template.queryForObject(sql, securityRowMapper,login);
-            if (!Objects.equals(password, security.getPassword())){
+            if (!passwordEncoder().matches(password, security.getPassword())){
                 return -1;
             }
             return security.getId();
