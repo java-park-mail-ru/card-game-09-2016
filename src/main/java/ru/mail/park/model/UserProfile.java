@@ -1,50 +1,26 @@
 package ru.mail.park.model;
 
 public class UserProfile {
-    private String login;
-    private String email;
-    private String password;
-    private Integer id;
+    private final String login;
+    private final Integer score;
+    private final Integer id;
 
-    public UserProfile(Integer id, String login, String email, String password) {
+    public UserProfile(Integer id, String login, Integer score) {
         this.login = login;
-        this.email = email;
-        this.password = password;
         this.id = id;
-    }
-    
-    public String getEmail() {
-        return email;
+        this.score = score;
     }
 
     public String getLogin() {
         return login;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
     public Integer getId() {
         return id;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public Integer getScore() {
+        return score;
     }
-
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
 }
 

@@ -36,15 +36,15 @@ public class AccountService {
                         return pst;
                     }
 					, keyHolder);
-			return new UserProfile(keyHolder.getKey().intValue(),login, email, password);
+			return new UserProfile(keyHolder.getKey().intValue(),login, 0);
 		} catch (DuplicateKeyException dk) {
 			return null;
 		}
     }
 
-    public UserProfile getUser(String login) {
-        String sql = "SELECT * FROM `Users` WHERE `login` = ?;";
-        return template.queryForObject(sql, userProfileRowMapper, login);
+    public UserProfile getUser(Integer id) {
+        String sql = "SELECT `id`,`login`, `score` FROM `Users` WHERE `login` = ?;";
+        return template.queryForObject(sql, userProfileRowMapper, id);
     }
 
     public int removeUser(String login) {
@@ -68,8 +68,5 @@ public class AccountService {
     }
 
     private final RowMapper<UserProfile> userProfileRowMapper = (rs, rowNum) ->
-            new UserProfile(rs.getInt("id"),
-                rs.getString("login"),
-                rs.getString("email"),
-                rs.getString("password"));
+            new UserProfile(rs.getInt("id") ,rs.getString("login"),rs.getInt("score"));
 }
