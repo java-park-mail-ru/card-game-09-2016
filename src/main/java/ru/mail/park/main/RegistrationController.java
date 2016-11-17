@@ -104,16 +104,15 @@ public class RegistrationController {
         final String password = body.getPassword();
 
         //final String oldlogin = sessionService.returnUserId(sessionId.getId());
-        final  String oldlogin;
         if(!sessionService.checkExists(sessionId.getId())){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
-        UserProfile temp = accountService.getUser((Integer) sessionService.returnUserId(sessionId.getId()));
+        final UserProfile temp = accountService.getUser(sessionService.returnUserId(sessionId.getId()));
         if (temp==null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
         if (temp.getId() == id) {
-            oldlogin = temp.getLogin();
+            final String oldlogin = temp.getLogin();
             accountService.changeUser(oldlogin, login, password, email);
             //sessionService.changeSessionLogin(sessionId.getId(),oldlogin,login); -? что это
             return ResponseEntity.ok().body(body);
@@ -127,7 +126,7 @@ public class RegistrationController {
         if (!sessionService.checkExists(sessionId.getId())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{}");
         }
-        UserProfile temp = accountService.getUser(sessionService.returnUserId(sessionId.getId()));
+        final UserProfile temp = accountService.getUser(sessionService.returnUserId(sessionId.getId()));
         if (temp==null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
         }
