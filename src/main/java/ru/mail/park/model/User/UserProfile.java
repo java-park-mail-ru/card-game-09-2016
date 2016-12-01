@@ -1,4 +1,4 @@
-package ru.mail.park.model;
+package ru.mail.park.model.User;
 
 public class UserProfile {
     private final String login;

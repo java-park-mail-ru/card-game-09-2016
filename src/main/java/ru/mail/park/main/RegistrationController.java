@@ -7,7 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import ru.mail.park.model.UserProfile;
+import ru.mail.park.model.User.UserCreate;
+import ru.mail.park.model.User.UserProfile;
 import ru.mail.park.services.AccountService;
 import ru.mail.park.services.SessionService;
 
@@ -28,7 +29,7 @@ public class RegistrationController {
     }
 
     @RequestMapping(path = "/api/user", method = RequestMethod.POST)
-    public ResponseEntity login(@RequestBody RegistRequest body) {
+    public ResponseEntity login(@RequestBody UserCreate body) {
 
 
         final String login = body.getLogin();
@@ -39,10 +40,10 @@ public class RegistrationController {
         if (StringUtils.isEmpty(login)
                 || StringUtils.isEmpty(password)
                 || StringUtils.isEmpty(email)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
         }
-        if (accountService.addUser(login, password, email) != null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
+        if (accountService.addUser(login, password, email) == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
         }
 
         return ResponseEntity.ok(new SuccessResponse(login));
@@ -98,7 +99,7 @@ public class RegistrationController {
 
 
     @RequestMapping(path = "/api/user/{id}", method = RequestMethod.PUT)
-    public ResponseEntity changeInfo(@PathVariable("id") int id, HttpSession sessionId, @RequestBody RegistRequest body) {
+    public ResponseEntity changeInfo(@PathVariable("id") int id, HttpSession sessionId, @RequestBody UserCreate body) {
         final String login = body.getLogin();
         final String email = body.getEmail();
         final String password = body.getPassword();
@@ -140,32 +141,7 @@ public class RegistrationController {
     }
 
 
-    private  static final class RegistRequest {
-        private String login;
-        private String email;
-        private String password;
 
-        @JsonCreator
-        private RegistRequest(@JsonProperty("login") String login,
-                              @JsonProperty("email") String email,
-                              @JsonProperty("password") String password) {
-            this.login = login;
-            this.email = email;
-            this.password = password;
-        }
-
-        public String getLogin() {
-            return login;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-    }
 
     private static final class AuthRequest {
         private String login;
