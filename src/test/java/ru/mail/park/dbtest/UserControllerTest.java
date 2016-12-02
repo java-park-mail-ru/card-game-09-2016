@@ -15,6 +15,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.mail.park.model.User.UserCreate;
 
+import java.util.HashMap;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,15 +32,8 @@ public class UserControllerTest {
 
     @Test
     public void testCreate() throws Exception {
-        final String user = "{\"login\": \"user1\", \"email\": \"example@mail.ru\", \"password\": \"GOD\" }";
-        final UserCreate user1 = new UserCreate("user1","example@mail.ru","GOD");
-
-        mockMvc.perform(post("/api/user/")
-                .content(user1.toString())
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-               /* .andExpect(jsonPath("response.sessionid").isString())
-                .andExpect(jsonPath("response.id").isNumber())*/;
+        int countUser = 150;
+        HashMap<Integer,UserCreate> userHashMap = userCreateHashMap(countUser);
 
       //  mockMvc.perform(post("/api/session")
       //          .content(user)
@@ -49,4 +44,24 @@ public class UserControllerTest {
 
     }
 
+    @Test
+    public HashMap<Integer,UserCreate> userCreateHashMap(int couse) throws Exception{
+        HashMap<Integer,UserCreate> userHashMap = new HashMap<>();
+        UserCreate user;
+        for (int i=0; i<couse; i++){
+            user =new UserCreate("user"+i,"example"+i+"@mail.ru","GOD"+hashCode());
+            userHashMap.put(i,user);
+            mockMvc.perform(post("/api/user/")
+                    .content(user.toString())
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("login").value(user.getLogin()));
+        }
+        return userHashMap;
+    }
+/*
+    @Test
+    public HashMap<>
+
+*/
 }
