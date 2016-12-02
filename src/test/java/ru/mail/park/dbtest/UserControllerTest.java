@@ -44,7 +44,6 @@ public class UserControllerTest {
 
     }
 
-    @Test
     public HashMap<Integer,UserCreate> userCreateHashMap(int couse) throws Exception{
         HashMap<Integer,UserCreate> userHashMap = new HashMap<>();
         UserCreate user;
