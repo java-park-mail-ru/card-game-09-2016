@@ -2,6 +2,7 @@ package ru.mail.park.services;
 
 
 import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.mail.park.model.User.UserProfile;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 @Transactional
 @Service
@@ -21,6 +24,7 @@ public class AccountService {
     private final JdbcTemplate template;
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
     public AccountService(JdbcTemplate template, PasswordEncoder passwordEncoder) {
         this.template = template;
         this.passwordEncoder = passwordEncoder;
@@ -54,6 +58,24 @@ public class AccountService {
         } catch (EmptyResultDataAccessException na) {
             return null;
         }
+    }
+
+    public List<String> checkUser(String login, String email){
+        List<String> duplicare = new ArrayList<>();
+        if(template.queryForObject("SELECT `id` FROM `Users` WHERE `login` = ?;",Integer.class,login)>0)
+            duplicare.add("login");
+        if(template.queryForObject("SELECT `id` FROM `Users` WHERE `email` = ?;",Integer.class,email)>0)
+            duplicare.add("email");
+
+        return duplicare;
+    }
+
+    public List<UserProfile> getTop(int limit, int since_id){
+        List<UserProfile> top;
+        String sqlLimit =(limit>0)?"LIMIT " + limit:"";
+        String sql = "SELECT `id`, `login`, `score` FROM `Users` WHERE `id` > ? ORDER BY `score` DESC " + sqlLimit;
+        top = template.query(sql, userProfileRowMapper, since_id);
+        return top;
     }
 
     public Integer getId(String login, String password) {

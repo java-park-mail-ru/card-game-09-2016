@@ -1,0 +1,1 @@
+CREATE INDEX `usersIdAndScore` ON `Users`(`score`,`id`);
