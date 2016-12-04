@@ -2,7 +2,7 @@ package ru.mail.park.model.User;
 
 public class UserProfile {
     private final String login;
-    private final Integer score;
+    private Integer score;
     private final Integer id;
 
     public UserProfile(Integer id, String login, Integer score) {
@@ -21,6 +21,10 @@ public class UserProfile {
 
     public Integer getScore() {
         return score;
+    }
+
+    public void setScore(Integer score) {
+        this.score = score;
     }
 }
 
