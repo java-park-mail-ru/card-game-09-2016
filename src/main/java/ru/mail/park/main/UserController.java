@@ -1,14 +1,11 @@
 package ru.mail.park.main;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import ru.mail.park.model.User.UserCreate;
 import ru.mail.park.model.User.UserProfile;
-import ru.mail.park.model.all.Result;
+import ru.mail.park.model.other.Result;
 import ru.mail.park.services.AccountService;
-import ru.mail.park.services.GameUserService;
-import ru.mail.park.services.RoomService;
 
 import java.util.ArrayList;
 import java.util.List;

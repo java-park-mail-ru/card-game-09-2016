@@ -3,7 +3,7 @@ package ru.mail.park.main;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.mail.park.model.User.UserProfile;
-import ru.mail.park.model.all.Result;
+import ru.mail.park.model.other.Result;
 import ru.mail.park.model.game.Room;
 import ru.mail.park.model.game.UserGame;
 import ru.mail.park.services.AccountService;
@@ -12,7 +12,6 @@ import ru.mail.park.services.RoomService;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 @RestController

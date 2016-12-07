@@ -4,14 +4,14 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.mail.park.services.AccountService;
 
 @RestController
-class MainController {
+public class MainController {
     private static AccountService accountService;
 
     MainController(AccountService _accountService) {
         accountService=_accountService;
     }
-    
-    static AccountService getAccountService() {
+
+    public static AccountService getAccountService() {
         return accountService;
     }
 }

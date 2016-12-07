@@ -1,4 +1,4 @@
-package ru.mail.park.model.all;
+package ru.mail.park.model.other;
 
 @SuppressWarnings("unused")
 public final class Result {
