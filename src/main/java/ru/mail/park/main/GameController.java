@@ -12,6 +12,7 @@ import ru.mail.park.services.RoomService;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @RestController
@@ -40,7 +41,9 @@ public class GameController extends MainController{
         if (result.getCode()>0)
             return result;
         int user_id = ((UserProfile) result.getResponse()).getId();
-        Integer score = (GameUserService.getUser(user_id)!=null)?GameUserService.getUser(user_id).getScore():null;
+        Integer score = null;
+        if (GameUserService.getUser(user_id) != null)
+            score = GameUserService.getUser(user_id).getScore();
         if (score==null)
             return Result.notFound();
         int room_id = GameUserService.getRoom(user_id);
@@ -51,7 +54,7 @@ public class GameController extends MainController{
             Определяем игрок сдался или он уже выйграл и
             просто хочет покинуть комнату, не досматривая игру
         */
-        if (!room.getPlace().equals(user_id)) {
+        if (!room.getPlace().contains(user_id)) {
             room.setBank(score);
             room.getLose().push(user_id);
         }else{
@@ -75,15 +78,22 @@ public class GameController extends MainController{
         }
         int place = 5;
         int user_id;
-        int score;
+        int score = 0;
         while (room.getPlace().size()>0){
             user_id = room.getPlace().pop();
-            score = room.getReward().pop();
+            score += room.getReward().pop();
             getAccountService().addScore(user_id,score);
             top.add(place,getAccountService().getUser(user_id));
             top.get(place).setScore(score);
             place--;
         }
+        Integer [] users = (Integer[]) room.getUsers().toArray();
+        for (Integer user : users) {
+            GameUserService.delUser(user);
+        }
+        RoomService.closeRoom(room_id);
         return top;
     }
+
+
 }
