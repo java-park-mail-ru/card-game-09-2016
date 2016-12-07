@@ -11,6 +11,8 @@ import ru.mail.park.services.GameUserService;
 import ru.mail.park.services.RoomService;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class GameController extends MainController{
@@ -21,7 +23,7 @@ public class GameController extends MainController{
     }
 
     @RequestMapping(path = "/api/play" ,method = RequestMethod.POST)
-    public Result play(HttpSession httpSession){
+    public static Result play(HttpSession httpSession){
         Result result = SessionController.checkAuth(httpSession);
         if (result.getCode()>0)
             return result;
@@ -33,7 +35,7 @@ public class GameController extends MainController{
     }
 
     @RequestMapping(path = "/api/play", method = RequestMethod.DELETE)
-    public Result exit(HttpSession httpSession){
+    public static Result exit(HttpSession httpSession){
         Result result = SessionController.checkAuth(httpSession);
         if (result.getCode()>0)
             return result;
@@ -56,7 +58,7 @@ public class GameController extends MainController{
             room.getReward().push(score);
         }
         /*
-            Хранение в памяти модели игроков уоторые играет
+            Хранение в памяти модели игроков которые играют
             При выходе из комнате будем убирать его
         */
         room.getUsers().remove(user_id);
@@ -64,5 +66,24 @@ public class GameController extends MainController{
         return Result.ok();
     }
 
-
+    public static List<UserProfile> roomEnd(int room_id){
+        Room room = RoomService.getRoom(room_id);
+        List<UserProfile> top = new ArrayList<>();
+        while (room.getLose().size()>0){
+            room.getPlace().push(room.getLose().pop());
+            room.getReward().push(0);
+        }
+        int place = 5;
+        int user_id;
+        int score;
+        while (room.getPlace().size()>0){
+            user_id = room.getPlace().pop();
+            score = room.getReward().pop();
+            getAccountService().addScore(user_id,score);
+            top.add(place,getAccountService().getUser(user_id));
+            top.get(place).setScore(score);
+            place--;
+        }
+        return top;
+    }
 }
