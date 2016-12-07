@@ -32,9 +32,16 @@ public class UserControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    public void testCreate() throws Exception {
+    public void testUserCreate() throws Exception {
         int countUser = 150;
-        HashMap<String,UserCreate> userHashMap = userCreateHashMap(countUser);
+        userCreateHashMap(countUser);
+    }
+
+    @Test
+    public void testUserDefault() throws Exception{
+        int countUser = 150;
+        userCreateHashMap(countUser);
+        userDefault();
     }
 
     public HashMap<String,UserCreate> userCreateHashMap(int cause) throws Exception{
@@ -55,11 +62,9 @@ public class UserControllerTest {
     }
 
     public List<UserProfile> userDefault() throws Exception {
-        List<UserProfile> allUser= MainController.getAccountService().getTop(0,0);
+        List<UserProfile> allUser = MainController.getAccountService().getTop(0, 0);
         for (UserProfile anAllUser : allUser) {
-            mockMvc.perform(get("/api/user/")
-                    .content("?" + anAllUser.getId())
-                    .contentType(MediaType.APPLICATION_JSON))
+            mockMvc.perform(get("/api/user/?id="+String.valueOf(anAllUser.getId())))
                     .andExpect(jsonPath("code").value(0))
                     .andExpect(jsonPath("response.id").value(anAllUser.getId()))
                     .andExpect(jsonPath("response.login").value(anAllUser.getLogin()))
@@ -67,5 +72,4 @@ public class UserControllerTest {
         }
         return allUser;
     }
-
 }
