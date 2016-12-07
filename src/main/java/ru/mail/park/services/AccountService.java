@@ -31,7 +31,7 @@ public class AccountService {
     }
     
     @Nullable
-    public UserProfile addUser(String login, String password, String email) {
+    public  UserProfile addUser(String login, String password, String email) {
         try {
 			KeyHolder keyHolder = new GeneratedKeyHolder();
 			template.update(cnctn -> {
@@ -78,6 +78,11 @@ public class AccountService {
         return top;
     }
 
+    public int addScore(int user_id,int score){
+        String sql ="UPDATE `Users` SET `score` = `score` + ? WHERE `id` = ?";
+        return template.update(sql,score,user_id);
+    }
+    
     public Integer getId(String login, String password) {
         try {
             final String sql = "SELECT `id`, `password` FROM `Users` WHERE `login` = ? ;";

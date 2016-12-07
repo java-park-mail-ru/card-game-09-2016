@@ -9,22 +9,24 @@ import ru.mail.park.model.User.UserAuto;
 import ru.mail.park.model.User.UserProfile;
 import ru.mail.park.model.all.Result;
 import ru.mail.park.services.AccountService;
+import ru.mail.park.services.GameUserService;
+import ru.mail.park.services.RoomService;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-public class SessionController {
-    private final AccountService accountService;
+public class SessionController extends MainController{
 
     @Autowired
-    public SessionController(AccountService accountService) {
-        this.accountService = accountService;
+    SessionController(AccountService _accountService,
+                      RoomService _roomService) {
+        super(_accountService);
     }
 
     @RequestMapping(path = "/api/session", method = RequestMethod.GET)
-    public Result checkAuth(HttpSession httpSession) {
+    public static Result checkAuth(HttpSession httpSession) {
         UserProfile userProfile = null;
 
         if (httpSession.getAttribute("userId") == null){
@@ -32,7 +34,7 @@ public class SessionController {
         }
 
         try {
-            userProfile = accountService.getUser((Integer) httpSession.getAttribute("userId"));
+            userProfile = getAccountService().getUser((Integer) httpSession.getAttribute("userId"));
         }catch (Exception e) {
             Result.unkownError();
         }
@@ -40,7 +42,7 @@ public class SessionController {
     }
 
     @RequestMapping(path = "/api/session", method = RequestMethod.POST)
-    public Result auth(@RequestBody UserAuto body, HttpSession httpSession) {
+    public static Result auth(@RequestBody UserAuto body, HttpSession httpSession) {
         final String login = body.getLogin();
         final String password = body.getPassword();
         UserProfile userProfile = null;
@@ -53,15 +55,15 @@ public class SessionController {
             return Result.incorrectRequest(error);
 
         try {
-            final int userId = accountService.getId(login, password);
+            final int userId = getAccountService().getId(login, password);
             if (userId == 0) {
-                error = accountService.checkUser(login,null);
+                error = getAccountService().checkUser(login,null);
                 if (error.size()==0) {
                     return Result.invalidReques();
                 }
                 return Result.notFound();
             }
-            userProfile = accountService.getUser(userId);
+            userProfile = getAccountService().getUser(userId);
             assert userProfile != null;
             httpSession.setAttribute("userId",userProfile.getId());
         } catch (Exception e) {
@@ -72,7 +74,7 @@ public class SessionController {
     }
 
     @RequestMapping(path = "/api/session", method = RequestMethod.DELETE)
-    public Result exit(HttpSession httpSession){
+    public static Result exit(HttpSession httpSession){
         httpSession.setAttribute("userId",null);
         return Result.ok();
     }

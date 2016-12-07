@@ -2,34 +2,36 @@ package ru.mail.park.model.game;
 
 import java.util.*;
 
-public class Deck {
-    private final Stack<Card> cardStack = new Stack<>();
+class Deck {
+    private final Stack<String> cardStack = new Stack<>();
     private final int maxCards = 105;
     private final int maxDignity = 14;
     private final int maxSuit = 10;
 
-    public Deck() {
-        Set<Card> cardsSet;
+    Deck() {
+        Set<String> cardsSet;
         cardsSet = new HashSet<>();
         final Random random = new Random();
         while (cardsSet.size()<maxCards){
-            cardsSet.add(new Card(random.nextInt(maxDignity),random.nextInt(maxSuit)));
+            cardsSet.add((new Card(random.nextInt(maxDignity),random.nextInt(maxSuit))).toString());
         }
         cardsSet.forEach(cardStack::push);
     }
 
-    public Set<Card> popCards(int count){
-        Set<Card> result = new HashSet<>();
-        Card card = null;
+    public Set<String> popCards(int count){
+        Set<String> result = new HashSet<>();
         for (int i=0; i<count; i++){
-            card = cardStack.pop();
-            result.add(card);
+            result.add(cardStack.pop());
         }
         return result;
     }
 
-    public int pushCard(Set<Card> cards){
+    public int pushCard(Set<String> cards){
         cards.forEach(cardStack::push);
+        return cardStack.size();
+    }
+
+    public int getCount(){
         return cardStack.size();
     }
 }

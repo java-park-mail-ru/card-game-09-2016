@@ -6,7 +6,7 @@ public class Card {
     final int inQueue;
     final String suit;
 
-    Card(int inQueue, int suit) {
+    public Card(int inQueue, int suit) {
         this.inQueue = inQueue;
         if (inQueue > 0) {
             switch (inQueue) {
@@ -38,5 +38,28 @@ public class Card {
     @Override
     public String toString(){
         return name + suit;
+    }
+
+    static public int stringToPar(String card){
+        switch (card.charAt(0)){
+            case 'T':
+                return 0;
+            case 'A':
+                return 1;
+            case 'X':
+                return 10;
+            case 'J':
+                return 11;
+            case 'Q':
+                return 12;
+            case 'K':
+                return 13;
+            default:
+                return (int)card.charAt(0);
+        }
+    }
+
+    static public int stringToSuit(String card){
+        return (int) card.charAt(1);
     }
 }

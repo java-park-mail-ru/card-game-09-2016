@@ -7,21 +7,22 @@ import ru.mail.park.model.User.UserCreate;
 import ru.mail.park.model.User.UserProfile;
 import ru.mail.park.model.all.Result;
 import ru.mail.park.services.AccountService;
+import ru.mail.park.services.GameUserService;
+import ru.mail.park.services.RoomService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-public class UserController {
-    private final AccountService accountService;
+public class UserController extends MainController{
 
     @Autowired
-    public UserController(AccountService accountService) {
-        this.accountService = accountService;
+    UserController(AccountService _accountService) {
+        super(_accountService);
     }
 
     @RequestMapping(path = "/api/user", method = RequestMethod.POST)
-    public Result userAdd(@RequestBody UserCreate body) {
+    public static Result userAdd(@RequestBody UserCreate body) {
         UserProfile newUser = null;
         String login = body.getLogin();
         String email = body.getEmail();
@@ -36,9 +37,9 @@ public class UserController {
         if (error.size() > 0)
             return Result.incorrectRequest(error);
         try {
-            newUser = accountService.addUser(login, password, email);
+            newUser = getAccountService().addUser(login, password, email);
             if (newUser == null)
-                return Result.userAlreadyExists(accountService.checkUser(login, email));
+                return Result.userAlreadyExists(getAccountService().checkUser(login, email));
         } catch (Exception e) {
             Result.unkownError();
         }
@@ -46,12 +47,12 @@ public class UserController {
     }
 
     @RequestMapping(path = "/api/user", method = RequestMethod.GET)
-    public Result userAbout(@RequestParam(name = "id") Integer id){
+    public static Result userAbout(@RequestParam(name = "id") Integer id){
         UserProfile user;
         if (!(id>0))
             return Result.incorrectRequest();
         try {
-            user = accountService.getUser(id);
+            user = getAccountService().getUser(id);
             if (user == null)
                 return Result.notFound();
         }catch (Exception e){
@@ -61,7 +62,7 @@ public class UserController {
     }
 
     @RequestMapping(path =  "/api/top", method = RequestMethod.GET)
-    public Result userTop(
+    public static Result userTop(
             @RequestParam(name = "limit", required = false) Integer limit,
             @RequestParam(name = "since_id", required = false) Integer since_id
     ){
@@ -69,7 +70,7 @@ public class UserController {
         since_id = (since_id == null)?0:since_id;
         List<UserProfile> userProfileList;
         try {
-            userProfileList = accountService.getTop(limit,since_id);
+            userProfileList = getAccountService().getTop(limit,since_id);
         }catch (Exception e){
             return Result.unkownError();
         }
