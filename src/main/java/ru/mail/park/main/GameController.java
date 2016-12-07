@@ -38,8 +38,8 @@ public class GameController extends MainController{
         if (result.getCode()>0)
             return result;
         int user_id = ((UserProfile) result.getResponse()).getId();
-        UserGame userGame = GameUserService.getUser(user_id);
-        if (userGame==null)
+        Integer score = (GameUserService.getUser(user_id)!=null)?GameUserService.getUser(user_id).getScore():null;
+        if (score==null)
             return Result.notFound();
         int room_id = GameUserService.getRoom(user_id);
         if (room_id<0)
@@ -49,13 +49,12 @@ public class GameController extends MainController{
             Определяем игрок сдался или он уже выйграл и
             просто хочет покинуть комнату, не досматривая игру
         */
-        if (!room.getPlace().equals(userGame.getId())) {
-            room.setBank(userGame.getScore());
+        if (!room.getPlace().equals(user_id)) {
+            room.setBank(score);
             room.getLose().push(user_id);
         }else{
-            room.getReward().push(userGame.getScore());
+            room.getReward().push(score);
         }
-        userGame.setScore(0);
         /*
             Хранение в памяти модели игроков уоторые играет
             При выходе из комнате будем убирать его
