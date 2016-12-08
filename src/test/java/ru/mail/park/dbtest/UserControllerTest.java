@@ -33,11 +33,7 @@ public class UserControllerTest {
 
     @Test
     public void testUserCreate() throws Exception {
-        int countUser = 150;
-        UserCreate user;
-        Random random = new Random();
-        for (int i=0; i<countUser; i++){
-            user =new UserCreate("user"+i,"example"+i+"@mail.ru","GOD"+random.nextInt());
+        UserCreate user =new UserCreate("user","example@mail.ru","GOD");
             mockMvc.perform(post("/api/user/")
                     .content(user.toString())
                     .contentType(MediaType.APPLICATION_JSON))
@@ -45,12 +41,11 @@ public class UserControllerTest {
                     .andExpect(jsonPath("response.id").isNumber())
                     .andExpect(jsonPath("response.login").value(user.getLogin()))
                     .andExpect(jsonPath("response.score").value(0));
-        }
     }
 
     @Test
     public void testUserDefault() throws Exception{
-        int countUser = 150;
+        int countUser = 2;
         userCreateList(countUser);
         List<UserProfile> allUser = MainController.getAccountService().getTop(0, 0);
         for (UserProfile anAllUser : allUser) {
@@ -66,25 +61,22 @@ public class UserControllerTest {
     public void testUserTop() throws Exception{
         int countUser = 150;
         int maxLimit = 25;
-        int maxRequest = 10;
         Random random = new Random();
         userCreateList(countUser);
         List<UserProfile> users;
-        for (int i=0,limit,since; i<maxRequest; i++){
-            limit = random.nextInt(maxLimit);
-            since = random.nextInt(countUser);
+        int limit= random.nextInt(maxLimit);
+        int since= random.nextInt(countUser);
             users = MainController.getAccountService().getTop(limit, since);
             ResultActions result = mockMvc.perform(get("/api/top")
                     .param("limit", String.valueOf(limit))
                     .param("since_id", String.valueOf(since)));
                 result.andExpect(jsonPath("code").value(0));
-            for (int j =0 ; j<users.size(); j++){
-                result.andExpect(jsonPath("response.["+j+"].id").value(users.get(j).getId()))
-                      .andExpect(jsonPath("response.["+j+"].login").value(users.get(j).getLogin()))
-                      .andExpect(jsonPath("response.["+j+"].score").value(users.get(j).getScore()));
-            }
-        }
+            for (int j =0 ; j<users.size(); j++) {
+                result.andExpect(jsonPath("response.[" + j + "].id").value(users.get(j).getId()))
+                        .andExpect(jsonPath("response.[" + j + "].login").value(users.get(j).getLogin()))
+                        .andExpect(jsonPath("response.[" + j + "].score").value(users.get(j).getScore()));
 
+            }
     }
 
     public static List<UserCreate> userCreateList(int cause) throws Exception{

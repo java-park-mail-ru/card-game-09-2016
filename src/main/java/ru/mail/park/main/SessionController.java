@@ -54,13 +54,10 @@ public class SessionController extends MainController{
 
         try {
             final int userId = getAccountService().getId(login, password);
-            if (userId == 0) {
-                error = getAccountService().checkUser(login,null);
-                if (error.size()==0) {
-                    return Result.invalidReques();
-                }
+            if (userId == 0)
                 return Result.notFound();
-            }
+            if (userId==-1)
+                return Result.invalidReques();
             userProfile = getAccountService().getUser(userId);
             assert userProfile != null;
             httpSession.setAttribute("userId",userProfile.getId());
