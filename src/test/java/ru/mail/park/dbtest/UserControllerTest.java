@@ -64,7 +64,7 @@ public class UserControllerTest {
     public List<UserProfile> userDefault() throws Exception {
         List<UserProfile> allUser = MainController.getAccountService().getTop(0, 0);
         for (UserProfile anAllUser : allUser) {
-            mockMvc.perform(get("/api/user/?id="+String.valueOf(anAllUser.getId())))
+            mockMvc.perform(get("/api/user/"+String.valueOf(anAllUser.getId())))
                     .andExpect(jsonPath("code").value(0))
                     .andExpect(jsonPath("response.id").value(anAllUser.getId()))
                     .andExpect(jsonPath("response.login").value(anAllUser.getLogin()))

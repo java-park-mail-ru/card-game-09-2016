@@ -53,7 +53,7 @@ public class AccountService {
     @Nullable
     public UserProfile getUser(Integer id) {
         try {
-            final String sql = "SELECT `id`,`login`, `score` FROM `Users` WHERE `login` = ?;";
+            final String sql = "SELECT `id`,`login`, `score` FROM `Users` WHERE `id` = ?;";
             return template.queryForObject(sql, userProfileRowMapper, id);
         } catch (EmptyResultDataAccessException na) {
             return null;
