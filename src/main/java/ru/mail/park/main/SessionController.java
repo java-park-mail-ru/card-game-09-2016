@@ -19,8 +19,7 @@ import java.util.List;
 public class SessionController extends MainController{
 
     @Autowired
-    SessionController(AccountService _accountService,
-                      RoomService _roomService) {
+    SessionController(AccountService _accountService) {
         super(_accountService);
     }
 

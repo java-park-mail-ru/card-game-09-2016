@@ -14,7 +14,7 @@ import ru.mail.park.model.User.UserCreate;
 import ru.mail.park.model.User.UserProfile;
 import ru.mail.park.main.MainController;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -34,14 +34,32 @@ public class UserControllerTest {
     @Test
     public void testUserCreate() throws Exception {
         int countUser = 150;
-        userCreateHashMap(countUser);
+        UserCreate user;
+        Random random = new Random();
+        for (int i=0; i<countUser; i++){
+            user =new UserCreate("user"+i,"example"+i+"@mail.ru","GOD"+random.nextInt());
+            mockMvc.perform(post("/api/user/")
+                    .content(user.toString())
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("code").value(0))
+                    .andExpect(jsonPath("response.id").isNumber())
+                    .andExpect(jsonPath("response.login").value(user.getLogin()))
+                    .andExpect(jsonPath("response.score").value(0));
+        }
     }
 
     @Test
     public void testUserDefault() throws Exception{
         int countUser = 150;
-        userCreateHashMap(countUser);
-        userDefault();
+        userCreateList(countUser);
+        List<UserProfile> allUser = MainController.getAccountService().getTop(0, 0);
+        for (UserProfile anAllUser : allUser) {
+            mockMvc.perform(get("/api/user/"+String.valueOf(anAllUser.getId())))
+                    .andExpect(jsonPath("code").value(0))
+                    .andExpect(jsonPath("response.id").value(anAllUser.getId()))
+                    .andExpect(jsonPath("response.login").value(anAllUser.getLogin()))
+                    .andExpect(jsonPath("response.score").value(anAllUser.getScore()));
+        }
     }
 
     @Test
@@ -50,7 +68,7 @@ public class UserControllerTest {
         int maxLimit = 25;
         int maxRequest = 10;
         Random random = new Random();
-        userCreateHashMap(countUser);
+        userCreateList(countUser);
         List<UserProfile> users;
         for (int i=0,limit,since; i<maxRequest; i++){
             limit = random.nextInt(maxLimit);
@@ -69,32 +87,15 @@ public class UserControllerTest {
 
     }
 
-    public HashMap<String,UserCreate> userCreateHashMap(int cause) throws Exception{
-        HashMap<String,UserCreate> userHashMap = new HashMap<>();
+    public static List<UserCreate> userCreateList(int cause) throws Exception{
+        List<UserCreate> userList = new ArrayList<>();
         UserCreate user;
+        Random random = new Random();
         for (int i=0; i<cause; i++){
-            user =new UserCreate("user"+i,"example"+i+"@mail.ru","GOD"+hashCode());
-            userHashMap.put(user.getLogin(),user);
-            mockMvc.perform(post("/api/user/")
-                    .content(user.toString())
-                    .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("code").value(0))
-                    .andExpect(jsonPath("response.id").isNumber())
-                    .andExpect(jsonPath("response.login").value(user.getLogin()))
-                    .andExpect(jsonPath("response.score").value(0));
+            user =new UserCreate("user"+i,"example"+i+"@mail.ru","GOD"+random.nextInt());
+            userList.add(i,user);
+            MainController.getAccountService().addUser(user.getLogin(),user.getPassword(),user.getEmail());
         }
-        return userHashMap;
-    }
-
-    public List<UserProfile> userDefault() throws Exception {
-        List<UserProfile> allUser = MainController.getAccountService().getTop(0, 0);
-        for (UserProfile anAllUser : allUser) {
-            mockMvc.perform(get("/api/user/"+String.valueOf(anAllUser.getId())))
-                    .andExpect(jsonPath("code").value(0))
-                    .andExpect(jsonPath("response.id").value(anAllUser.getId()))
-                    .andExpect(jsonPath("response.login").value(anAllUser.getLogin()))
-                    .andExpect(jsonPath("response.score").value(anAllUser.getScore()));
-        }
-        return allUser;
+        return userList;
     }
 }
